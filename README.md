@@ -5,7 +5,7 @@ With optional Google Coral.ai USB AI Accelerator (Edge TPU co-processor)
 This is a project for EE 45900 - Microprocessors - Spring 2020 at The City College of New York. In this project we will use a Raspberry Pi to create a Real-Time Object Detector.  
 Group members: Kelvin Ma and YoungHwa Min  
   
-We will be using a [Raspberry Pi 4 (4 GB) model](https://www.raspberrypi.org/products/raspberry-pi-4-model-b/?variant=raspberry-pi-4-model-b-4gb) and [Coral's USB Accelerator] (https://coral.ai/products/accelerator) along with [TensorFlow-Lite](https://www.tensorflow.org/lite/) and [OpenCV](https://opencv.org/)  This project will be open source and open to modification. In fact, it was made possible by many examples and open source code. We have provided credit in the code depending on the resources. Our own original code will also be open source to all, we only ask that you provide credit.   
+We will be using a [Raspberry Pi 4 (4 GB) model](https://www.raspberrypi.org/products/raspberry-pi-4-model-b/?variant=raspberry-pi-4-model-b-4gb) and [Coral's USB Accelerator](https://coral.ai/products/accelerator) along with [TensorFlow-Lite](https://www.tensorflow.org/lite/) and [OpenCV](https://opencv.org/)  This project will be open source and open to modification. In fact, it was made possible by many examples and open source code. We have provided credit in the code depending on the resources. Our own original code will also be open source to all, we only ask that you provide credit.   
 
 This code uses transfer learning model provided by TF-Lite. It uses the COCO SSD Quantized MobileNET. At the time of writing, TF-Lite only supports single shot detector models (SSD). Hence, we can not run any pretrained RCNN models.  
    
@@ -35,7 +35,28 @@ Next, we will start a virtual environment before installing the dependencies (li
 ```bash
 python -m venv obj-detector-env
 ```  
-If you close this terminal, this virtual environment will have to reactivated by typing  
+If you close this terminal, this virtual environment will have to reactivated as such:
 ```bash
+cd raspi-tflite-object-detection 
 source /obj-detector-env/bin/activate
 ```
+### Step 4. Setting up the dependencies
+A small python script is prewritten to set up all the dependencies. You can simple run  
+```bash
+python3 setup.py
+```
+This set up file sets up the following for OpenCV: 
+* `libtiff5-dev`,
+* `libjasper-dev`,
+* `libpng12-dev`,
+* `libavcodec-dev`,
+* `libavformat-dev`,
+* `libswscale-dev`,
+* `libv4l-dev`,
+* `libxvidcore-dev`,
+* `libx264-dev`,
+* `qt4-dev-tools`,
+* `libatlas-base-dev`,
+
+And uses [https://www.tensorflow.org/lite/guide/python](https://www.tensorflow.org/lite/guide/python) to install the appropriate TensorFlow-Lite iterpretor for your python version.   
+**Note**: you must have Python 3.5.x, 3.6.x, or 3.7.x installed on your Raspberry Pi. Python 3.8.x is currently unsupported at the time of writing.  
