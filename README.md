@@ -15,7 +15,7 @@ This project will be open source and open to modification. In fact, it was made 
 
 ## Requirements
 In order to run this project, you will need the following:  
-* 32 bit ARM based Raspberry Pi 4 - 4GB model B(other version of Raspberry Pi are untested).
+* ARM based Raspberry Pi 4 - 4GB model B(other version of Raspberry Pi are untested).
 * Raspian Buster or Raspian Stretch OS loaded on the Raspberry Pi
 * PiCamera (v1.x or v2 will work), or USB Webcam connect to the Raspberry Pi
 * Python 3.5.x, Python 3.6.x or Python 3.7.x
