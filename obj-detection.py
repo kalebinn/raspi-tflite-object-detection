@@ -14,6 +14,13 @@ from model import model # abstraction for tflite model
 RGB_INPUT_MEAN = 255/2
 RGB_INPUT_STD = 255/2
 
+# some display constants and colors
+FONT = cv2.FONT_HERSHEY_SIMPLEX
+RED = (0, 0 ,255)
+BLUE = (255, 0, 0)
+LT_GREEN = (10, 255, 0)
+LT_BLUE = (255, 255, 0)
+
 # add arguments for flexibility when running program
 arg_parser = argparse.ArgumentParser()
 arg_parser.add_argument("--model", default="./QSSD_mobile_net_model/")
@@ -21,7 +28,7 @@ arg_parser.add_argument("--graph", default="detect.tflite")
 arg_parser.add_argument("--labels", default="labelmap.txt")
 arg_parser.add_argument("--video", default=None)
 arg_parser.add_argument("--TPU", default=False)
-arg_parser.add_argument("--confidence_threshold", default=0.66)
+arg_parser.add_argument("--confidence_threshold", default=0.5)
 arg_parser.add_argument("--resolution", default="1280 x 720")
 
 # get the arguments - we will be using almost all of these arguments at one point or another
@@ -54,7 +61,6 @@ resolution = resolution.replace(" " , "")
 res_width, res_height = resolution.split('x')
 res_width, res_height = int(res_width), int(res_height)
 resolution = (res_width, res_height)
-print(f"Running Object Detection with resolution {resolution[0]} x {resolution[1]}")
 
 framerate_calculation = 1 
 clock_freq = cv2.getTickFrequency()
@@ -94,80 +100,173 @@ width = input_tensor_details[0]['shape'][2]
 # since I'm not sure if the quantization uses int8,16, 32, or 64, I will assume that if the model isnt float32 values, the it is quantized (for now)
 quantized_model = not (input_tensor_details[0]['dtype'] == np.float32)
 
-# Initialize frame rate calculation
-frame_rate_calc = 1
-freq = cv2.getTickFrequency()
+# now that we have all the information about the model, we will check to see if we want to use a video or a real-time camera
+# if a video file was not specified, then we will be using the camera 
 
-# Initialize video stream
-camera = Camera(resolution=(res_width,res_height), framerate=30).start()
-time.sleep(1)
+if video is None:
+    print("Starting Raspi Object detector with the camera. No video file was specified. Press q to quit")
+    print(f"Camera resolution is set to: {res_height} x {res_width}")
+    # Initialize frame rate calculation
+    frame_rate_calc = 1
+    freq = cv2.getTickFrequency()
 
-while True:
+    # Initialize video stream
+    camera = Camera(resolution=(res_width,res_height), framerate=30).start()
+    time.sleep(1)
+   
+    while not camera.stopped:
 
-    # Start timer (for calculating frame rate)
-    t1 = cv2.getTickCount()
+        # Start timer (for calculating frame rate)
+        t1 = cv2.getTickCount()
 
-    # Grab frame from video stream
-    camera_frame = camera.read()
+        # Grab frame from video stream
+        camera_frame = camera.read()
 
-    # Acquire frame and resize to expected model shape 
-    frame = camera_frame.copy()
-    frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-    frame_resized = cv2.resize(frame_rgb, (width, height))
-    input_data = np.expand_dims(frame_resized, axis=0)
+        # Acquire frame and resize to expected model shape 
+        frame = camera_frame.copy()
+        frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        frame_resized = cv2.resize(frame_rgb, (width, height))
+        input_data = np.expand_dims(frame_resized, axis=0)
 
-    # If the model is not quantized, then we need to normalize the pixel values between 0 and 1
-    if not quantized_model:
-        input_data = (np.float32(input_data) - RGB_INPUT_MEAN) / RGB_INPUT_STD
+        # If the model is not quantized, then we need to normalize the pixel values between 0 and 1
+        if not quantized_model:
+            input_data = (np.float32(input_data) - RGB_INPUT_MEAN) / RGB_INPUT_STD
 
-    # Perform the actual detection by running the model with the image as input
-    interpreter.set_tensor(input_tensor_details[0]['index'],input_data)
-    interpreter.invoke()
+        # Perform the actual detection by running the model with the image as input
+        interpreter.set_tensor(input_tensor_details[0]['index'],input_data)
+        interpreter.invoke()
 
-    # Retrieve detection results
-    boxes = interpreter.get_tensor(output_tensor_details[0]['index'])[0] # Bounding box coordinates of detected objects
-    classes = interpreter.get_tensor(output_tensor_details[1]['index'])[0] # Class index of detected objects
-    scores = interpreter.get_tensor(output_tensor_details[2]['index'])[0] # Confidence of detected objects
-    #num = interpreter.get_tensor(output_tensor_details[3]['index'])[0]  # Total number of detected objects (inaccurate and not needed)
+        # Retrieve detection results
+        boxes = interpreter.get_tensor(output_tensor_details[0]['index'])[0] # Bounding box coordinates of detected objects
+        classes = interpreter.get_tensor(output_tensor_details[1]['index'])[0] # Class index of detected objects
+        scores = interpreter.get_tensor(output_tensor_details[2]['index'])[0] # Confidence of detected objects
+        #num = interpreter.get_tensor(output_tensor_details[3]['index'])[0]  # Total number of detected objects (inaccurate and not needed)
 
-    # Loop over all detections and draw detection box if confidence is above minimum threshold
-    for i in range(len(scores)):
-        if ((scores[i] > conf_threshold) and (scores[i] <= 1.0)):
+        # Loop over all detections and draw detection box if confidence is above minimum threshold
+        for i in range(len(scores)):
+            if ((scores[i] > conf_threshold) and (scores[i] <= 1.0)):
 
-            # Get bounding box coordinates and draw box
-            # Interpreter can return coordinates that are outside of image dimensions, need to force them to be within image using max() and min()
-            ymin = int(max(1,(boxes[i][0] * res_height)))
-            xmin = int(max(1,(boxes[i][1] * res_width)))
-            ymax = int(min(res_height,(boxes[i][2] * res_height)))
-            xmax = int(min(res_width,(boxes[i][3] * res_width)))
-            
-            cv2.rectangle(frame, (xmin,ymin), (xmax,ymax), (10, 255, 0), 2)
+                # Get bounding box coordinates and draw box
+                ymin = int(max(1,(boxes[i][0] * res_height)))
+                xmin = int(max(1,(boxes[i][1] * res_width)))
+                ymax = int(min(res_height,(boxes[i][2] * res_height)))
+                xmax = int(min(res_width,(boxes[i][3] * res_width)))
+                
+                # get the name of the object
+                object_name = tf_model.labels[int(classes[i])] # Look up object name from "labels" array using class index
+                
+                # draw a bounding box around the object
+                # openCV take a tuple for the color as the fourth input to the function. but it is NOT In RGB format - instead it is in BGR format
+                if object_name == "person":
+                    # red box around people
+                    cv2.rectangle(frame, (xmin,ymin), (xmax,ymax), (0, 0, 255), 2)
+                elif object_name == "car":
+                    # ---- box aound cars
+                    cv2.rectangle(frame, (xmin,ymin), (xmax,ymax), (255, 255, 0), 2)
+                else:
+                    # green box around other objects detected
+                    cv2.rectangle(frame, (xmin,ymin), (xmax,ymax), (255, 255, 0), 2)
 
-            # Draw label
-            object_name = tf_model.labels[int(classes[i])] # Look up object name from "labels" array using class index
-            label = '%s: %d%%' % (object_name, int(scores[i]*100)) # Example: 'person: 72%'
-            labelSize, baseLine = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.7, 2) # Get font size
-            label_ymin = max(ymin, labelSize[1] + 10) # Make sure not to draw label too close to top of window
-            cv2.rectangle(frame, (xmin, label_ymin-labelSize[1]-10), (xmin+labelSize[0], label_ymin+baseLine-10), (255, 255, 255), cv2.FILLED) # Draw white box to put label text in
-            cv2.putText(frame, label, (xmin, label_ymin-7), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 0), 2) # Draw label text
+                # Draw label
+                obj_label = f"{object_name} : {round(scores[i]*100, 2)}%" # put a label with the object name and confidence score on the top right of the box
+                labelSize, baseLine = cv2.getTextSize(obj_label, FONT, 0.7, 2) # Get font size
+                label_ymin = max(ymin, labelSize[1] + 10) # Make sure not to draw label too close to top of window
+                cv2.rectangle(frame, (xmin, label_ymin-labelSize[1]-10), (xmin+labelSize[0], label_ymin+baseLine-10), (255, 255, 255), cv2.FILLED) 
+                cv2.putText(frame, obj_label, (xmin, label_ymin-7), FONT, 0.7, (0, 0, 0), 2) # Draw label text
 
-    # Draw framerate in corner of frame
-    cv2.putText(frame,'FPS: {0:.2f}'.format(frame_rate_calc),(30,50),cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,0),2,cv2.LINE_AA)
+        # Draw framerate in corner of frame
+        FPS = f"FPS: {round(frame_rate_calc, 2)}"
+        cv2.putText(frame, FPS, (30, 50), FONT, 1, LT_BLUE, 2, cv2.LINE_AA)
 
-    # All the results have been drawn on the frame, so it's time to display it.
-    cv2.imshow('Object detector', frame)
+        # Finally, project the image with imshow 
+        cv2.imshow('Real-Time Object detector with TF-LITE', frame)
 
-    # Calculate framerate
-    t2 = cv2.getTickCount()
-    time1 = (t2-t1)/freq
-    frame_rate_calc= 1/time1
+        # Calculate framerate
+        t2 = cv2.getTickCount()
+        time1 = (t2-t1)/freq
+        frame_rate_calc= 1/time1
 
-    # Press 'q' to quit
-    if cv2.waitKey(1) == ord('q'):
-        break
+        # Press 'q' to quit
+        if cv2.waitKey(1) == ord('q'):
+            camera.stop()
 
 
-cv2.destroyAllWindows()
-camera.stop()
+    cv2.destroyAllWindows()
+else:
+    # a video path was specified, as such we will perform object detection on the video instead
+    # Open video file
+    video = cv2.VideoCapture(video_file)
+    imW = video.get(cv2.CAP_PROP_FRAME_WIDTH)
+    imH = video.get(cv2.CAP_PROP_FRAME_HEIGHT)
+
+    while(video.isOpened()):
+
+        # Acquire frame and resize to expected shape [1xHxWx3]
+        ret, frame = video.read()
+        if not ret:
+            print('Reached the end of the video!')
+            break
+        frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        frame_resized = cv2.resize(frame_rgb, (width, height))
+        input_data = np.expand_dims(frame_resized, axis=0)
+
+        # If the model is not quantized, then we need to normalize the pixel values between 0 and 1
+        if not quantized_model:
+            input_data = (np.float32(input_data) - RGB_INPUT_MEAN) / RGB_INPUT_STD
+
+        # Perform the actual detection by running the model with the image as input
+        interpreter.set_tensor(input_tensor_details[0]['index'],input_data)
+        interpreter.invoke()
+
+        # Retrieve detection results
+        boxes = interpreter.get_tensor(output_tensor_details[0]['index'])[0] # Bounding box coordinates of detected objects
+        classes = interpreter.get_tensor(output_tensor_details[1]['index'])[0] # Class index of detected objects
+        scores = interpreter.get_tensor(output_tensor_details[2]['index'])[0] # Confidence of detected objects
+        #num = interpreter.get_tensor(output_tensor_details[3]['index'])[0]  # Total number of detected objects (inaccurate and not needed)
+
+        # Loop over all detections and draw detection box if confidence is above minimum threshold
+        for i in range(len(scores)):
+            if ((scores[i] > conf_threshold) and (scores[i] <= 1.0)):
+
+                # Get bounding box coordinates and draw box
+                # Interpreter can return coordinates that are outside of image dimensions, need to force them to be within image using max() and min()
+                ymin = int(max(1,(boxes[i][0] * imH)))
+                xmin = int(max(1,(boxes[i][1] * imW)))
+                ymax = int(min(imH,(boxes[i][2] * imH)))
+                xmax = int(min(imW,(boxes[i][3] * imW)))
+                
+                cv2.rectangle(frame, (xmin,ymin), (xmax,ymax), (10, 255, 0), 4)
+
+                # get the name of the object
+                object_name = tf_model.labels[int(classes[i])] # Look up object name from "labels" array using class index
+                
+                # draw a bounding box around the object
+                # openCV take a tuple for the color as the fourth input to the function. but it is NOT In RGB format - instead it is in BGR format
+                if object_name == "person":
+                    # red box around people
+                    cv2.rectangle(frame, (xmin,ymin), (xmax,ymax), (0, 0, 255), 2)
+                elif object_name == "car":
+                    # ---- box aound cars
+                    cv2.rectangle(frame, (xmin,ymin), (xmax,ymax), (255, 255, 0), 2)
+                else:
+                    # green box around other objects detected
+                    cv2.rectangle(frame, (xmin,ymin), (xmax,ymax), (255, 255, 0), 2)
+
+                # Draw label
+                obj_label = f"{object_name} : {round(scores[i]*100, 2)}%" # put a label with the object name and confidence score on the top right of the box
+                labelSize, baseLine = cv2.getTextSize(obj_label, FONT, 0.7, 2) # Get font size
+                label_ymin = max(ymin, labelSize[1] + 10) # Make sure not to draw label too close to top of window
+                cv2.rectangle(frame, (xmin, label_ymin-labelSize[1]-10), (xmin+labelSize[0], label_ymin+baseLine-10), (255, 255, 255), cv2.FILLED) 
+                cv2.putText(frame, obj_label, (xmin, label_ymin-7), FONT, 0.7, (0, 0, 0), 2) # Draw label text
+
+        # All the results have been drawn on the frame, so it's time to display it.
+        cv2.imshow('Object detector', frame)
+
+        # Press 'q' to quit
+        if cv2.waitKey(1) == ord('q'):
+            break
+
+    # Clean up
+    video.release()
 
 
