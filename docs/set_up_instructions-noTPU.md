@@ -1,4 +1,4 @@
-# How to set up the project without an Edge TPU
+# How to set up the project
 This project can be used as an extention for other projects such as smart street light cameras, dash cams for cars, UAV surveilance, etc. As such it was designed to be as expandable as possible. Here we will provide a step-by-step guide on how to run our project on your Raspberry Pi 4 without the Edge TPU described in the project. If you'd like to utilize the TPU in your project please refer to the other set up file [linked here](./set_up_instructions-TPU.md)
 
 ## Step 1. Update your Raspberry Pi
