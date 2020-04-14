@@ -14,6 +14,7 @@ class model():
         
         # next we need to get the labels
         label_file = os.path.join(working_dir, self.model_dir, labels_file)# get the cooresponding labelsmap
+        print(label_file)
         with open(label_file, 'r') as f: 
             # read line by line, strip the new line character and make a list
             self.labels = [line.strip() for line in f.readlines()]

@@ -17,11 +17,31 @@
 
 import os
 import sys
+import argparse
 
 print("Setting up neccessary files for Object Detection")
 os.system('date')
 
+# add arguments for flexibility when running program
+arg_parser = argparse.ArgumentParser()
+arg_parser.add_argument("--setup_TPU", default=False)
+arg_parser.add_argument("--overclock_TPU", default=False)
+
+args = arg_parser.parse_args()
+setup_TPU = args.setup_TPU
+overclock_TPU = args.overclock_TPU
+if setup_TPU:
+    print("Setting up Edge TPU packages")
+    os.system("echo \"deb https://packages.cloud.google.com/apt coral-edgetpu-stable main\" | sudo tee /etc/apt/sources.list.d/coral-edgetpu.list")
+    os.system("curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -")
+    os.system("sudo apt-get update")
+    if overclock_TPU == False:
+        os.system("sudo apt-get install libedgetpu1-std")
+    else:
+        os. system("sudo apt-get install libedgetpu1-max")
+        
 # install dependencies for OpenCV v3.4.6.27
+print("Installing OpenCV")
 cv_version = "3.4.6.27"
 openCV_dependencies = [
 	"libjpeg-dev", 

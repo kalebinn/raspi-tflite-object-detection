@@ -23,8 +23,8 @@ LT_BLUE = (255, 255, 0)
 
 # add arguments for flexibility when running program
 arg_parser = argparse.ArgumentParser()
-arg_parser.add_argument("--model", default="./QSSD_mobile_net_model/")
-arg_parser.add_argument("--graph", default="detect.tflite")
+arg_parser.add_argument("--model", default="./MobileNetv1_quant/")
+arg_parser.add_argument("--graph", default="MobileNetv1_quant.tflite")
 arg_parser.add_argument("--labels", default="labelmap.txt")
 arg_parser.add_argument("--video", default=None)
 arg_parser.add_argument("--use_TPU", default=False)
@@ -41,6 +41,9 @@ use_TPU = args.use_TPU
 conf_threshold = float(args.confidence_threshold) # minimum threshold to draw box
 resolution = args.resolution # resolution of the camera
 
+if use_TPU:
+    model_dir = "./MobileNetv2_quant_TPU/"
+    graph_file = "MobileNetv2_quant_TPU.tflite"
 cwd = os.getcwd() # current working directory
 
 # the model class is an abstraction of the agrument processing - check model.py for details 
