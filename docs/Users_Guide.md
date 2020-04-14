@@ -49,4 +49,5 @@ python3 obj-detection.py --video=test.mp4
 If you're using a TPU, you only need an extra argument when launching the script:
 ```bash
 python3 obj-detection.py --video=test.mp4 --use_TPU=True
-``` 
+```   
+~ **TODO: FINISH WRITING THIS** ~  

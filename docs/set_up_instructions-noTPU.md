@@ -2,17 +2,19 @@
 This project can be used as an extention for other projects such as smart street light cameras, dash cams for cars, UAV surveilance, etc. As such it was designed to be as expandable as possible. Here we will provide a step-by-step guide on how to run our project on your Raspberry Pi 4 without the Edge TPU described in the project. If you'd like to utilize the TPU in your project please refer to the other set up file [linked here](./set_up_instructions-TPU.md)
 
 ## Step 1. Update your Raspberry Pi
-You will need a Raspberry Pi 4 (32-bit ARM processor) running Raspian. This is neccessary for our particular project because we are using the Linux (ARM 32) installation of TensorFlow-Lite.   
+You will need a Raspberry Pi 4 (64-bit ARM processor) running Raspian.  
+
 First, update your Raspberry Pi. Especially if it is your first time booting or you have no used it in a while.  
 ```bash
 sudo apt-get update  
 sudo apt-get upgrade  
 ```  
-## Step 2. Install virtualenv (if you have no previously done so)
-Using a virual environment is **always** recommended when developing multiple python projects. If you have not done so yet, install a python virtual environment:  
+## Step 2. Install virtualenv 
+Using a virual environment is recommended when developing multiple python projects on the same machine. If you have not done so yet, install a python virtual environment:  
 ```bash
 pip3 install virtualenv
 ```
+If you do not want a virtual environment, you may skip this step and skip any future steps that ask you to activate the environment.
 ## Step 3. Get this repository and start a virtual environment
 After you've updated your Raspberry Pi, clone this repository and navigate into the directory  
 ```bash
