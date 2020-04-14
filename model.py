@@ -21,7 +21,9 @@ class model():
         #print(self.labels) # debug 
         
         # sometimes pretrained models will have "???" as a label for unknown objects, we need to delete them
-        while (self.labels.count("???")):
-            self.labels.remove("???")
+        #while (self.labels.count("???")):
+        #    self.labels.remove("???")
+        if self.labels[0] == "???":
+            del self.labels[0]
         
         #print(self.labels) # check that ??? are gone

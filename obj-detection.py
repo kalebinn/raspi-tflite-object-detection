@@ -27,7 +27,7 @@ arg_parser.add_argument("--model", default="./QSSD_mobile_net_model/")
 arg_parser.add_argument("--graph", default="detect.tflite")
 arg_parser.add_argument("--labels", default="labelmap.txt")
 arg_parser.add_argument("--video", default=None)
-arg_parser.add_argument("--TPU", default=False)
+arg_parser.add_argument("--use_TPU", default=False)
 arg_parser.add_argument("--confidence_threshold", default=0.5)
 arg_parser.add_argument("--resolution", default="1280 x 720")
 
@@ -37,7 +37,7 @@ model_dir = args.model # model to use
 graph_file = args.graph # graph file - *.tflite extention
 labels_file = args.labels # labels for the graph
 video = args.video # video to use
-use_TPU = args.TPU  
+use_TPU = args.use_TPU  
 conf_threshold = float(args.confidence_threshold) # minimum threshold to draw box
 resolution = args.resolution # resolution of the camera
 
@@ -100,15 +100,19 @@ width = input_tensor_details[0]['shape'][2]
 # since I'm not sure if the quantization uses int8,16, 32, or 64, I will assume that if the model isnt float32 values, the it is quantized (for now)
 quantized_model = not (input_tensor_details[0]['dtype'] == np.float32)
 
+# Initialize frame rate calculation
+frame_rate_calc = 1
+freq = cv2.getTickFrequency()
+
+# to allow the user to quit at any time with the 'esc' key 
+quit = False 
+
 # now that we have all the information about the model, we will check to see if we want to use a video or a real-time camera
 # if a video file was not specified, then we will be using the camera 
-
 if video is None:
     print("Starting Raspi Object detector with the camera. No video file was specified. Press q to quit")
     print(f"Camera resolution is set to: {res_height} x {res_width}")
-    # Initialize frame rate calculation
-    frame_rate_calc = 1
-    freq = cv2.getTickFrequency()
+    
 
     # Initialize video stream
     camera = Camera(resolution=(res_width,res_height), framerate=30).start()
@@ -186,8 +190,10 @@ if video is None:
         time1 = (t2-t1)/freq
         frame_rate_calc= 1/time1
 
-        # Press 'q' to quit
-        if cv2.waitKey(1) == ord('q'):
+        # Press 'esc' to quit at any time
+        key = cv2.waitKey(1)
+        if key == 27:
+            print("Quitting raspberry pi object detector!")
             camera.stop()
 
 
@@ -198,14 +204,14 @@ else:
     video = cv2.VideoCapture(video_file)
     imW = video.get(cv2.CAP_PROP_FRAME_WIDTH)
     imH = video.get(cv2.CAP_PROP_FRAME_HEIGHT)
-
-    while(video.isOpened()):
-
+    
+    while(video.isOpened() and not quit):
+        t1 = cv2.getTickCount()
         # Acquire frame and resize to expected shape [1xHxWx3]
-        ret, frame = video.read()
-        if not ret:
-            print('Reached the end of the video!')
-            break
+        next_frame_exists, frame = video.read()
+        if next_frame_exists == False:
+            print("Reached the end of the video, Quitting raspberry pi object detector")
+            quit = True 
         frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         frame_resized = cv2.resize(frame_rgb, (width, height))
         input_data = np.expand_dims(frame_resized, axis=0)
@@ -235,7 +241,7 @@ else:
                 ymax = int(min(imH,(boxes[i][2] * imH)))
                 xmax = int(min(imW,(boxes[i][3] * imW)))
                 
-                cv2.rectangle(frame, (xmin,ymin), (xmax,ymax), (10, 255, 0), 4)
+                #cv2.rectangle(frame, (xmin,ymin), (xmax,ymax), (10, 255, 0), 4)
 
                 # get the name of the object
                 object_name = tf_model.labels[int(classes[i])] # Look up object name from "labels" array using class index
@@ -244,27 +250,37 @@ else:
                 # openCV take a tuple for the color as the fourth input to the function. but it is NOT In RGB format - instead it is in BGR format
                 if object_name == "person":
                     # red box around people
-                    cv2.rectangle(frame, (xmin,ymin), (xmax,ymax), (0, 0, 255), 2)
+                    cv2.rectangle(frame, (xmin,ymin), (xmax,ymax), (0, 0, 255), 1)
                 elif object_name == "car":
                     # ---- box aound cars
-                    cv2.rectangle(frame, (xmin,ymin), (xmax,ymax), (255, 255, 0), 2)
+                    cv2.rectangle(frame, (xmin,ymin), (xmax,ymax), (255, 255, 0), 1)
                 else:
                     # green box around other objects detected
-                    cv2.rectangle(frame, (xmin,ymin), (xmax,ymax), (255, 255, 0), 2)
+                    cv2.rectangle(frame, (xmin,ymin), (xmax,ymax), (255, 255, 0), 1)
+                    pass
 
                 # Draw label
                 obj_label = f"{object_name} : {round(scores[i]*100, 2)}%" # put a label with the object name and confidence score on the top right of the box
-                labelSize, baseLine = cv2.getTextSize(obj_label, FONT, 0.7, 2) # Get font size
+                labelSize, baseLine = cv2.getTextSize(obj_label, FONT, 0.5, 1) # Get font size
                 label_ymin = max(ymin, labelSize[1] + 10) # Make sure not to draw label too close to top of window
-                cv2.rectangle(frame, (xmin, label_ymin-labelSize[1]-10), (xmin+labelSize[0], label_ymin+baseLine-10), (255, 255, 255), cv2.FILLED) 
-                cv2.putText(frame, obj_label, (xmin, label_ymin-7), FONT, 0.7, (0, 0, 0), 2) # Draw label text
+                cv2.rectangle(frame, (xmin, label_ymin-labelSize[1]-10), (xmin+labelSize[0], label_ymin+baseLine-12), (255, 255, 255), cv2.FILLED) 
+                cv2.putText(frame, obj_label, (xmin, label_ymin-7), FONT, 0.5, (0, 0, 0), 1) # Draw label text
+
+        # Draw framerate in corner of frame
+        FPS = f"FPS: {round(frame_rate_calc, 2)}"
+        cv2.putText(frame, FPS, (30, 50), FONT, 0.75, RED, 1, cv2.LINE_AA)
 
         # All the results have been drawn on the frame, so it's time to display it.
-        cv2.imshow('Object detector', frame)
+        cv2.imshow('Kelvin Ma - Object Detector', frame)
+        
+        t2 = cv2.getTickCount()
+        time1 = (t2-t1)/freq
+        frame_rate_calc= 1/time1
 
-        # Press 'q' to quit
-        if cv2.waitKey(1) == ord('q'):
-            break
+        # Press 'esc' to quit at any time
+        key = cv2.waitKey(1)
+        if key == 27:
+            quit = True
 
     # Clean up
     video.release()
