@@ -66,7 +66,7 @@ This set up file sets up the following for OpenCV:
 And uses [https://www.tensorflow.org/lite/guide/python](https://www.tensorflow.org/lite/guide/python) to install the appropriate TensorFlow-Lite iterpretor for your python version.   
 **Note**: you must have Python 3.5.x, 3.6.x, or 3.7.x installed on your Raspberry Pi. Python 3.8.x is currently unsupported at the time of writing.  
   
-### [Option B. With TPU] (#step_4b)
+### [Option B. With TPU](#step_4b)
 If you have the Edge TPU and would like the set up script to set it up for you, simply use this command:
 ```bash
 python3 setup.py --setup_TPU=True
