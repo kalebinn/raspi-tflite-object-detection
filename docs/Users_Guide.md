@@ -1,7 +1,7 @@
 # Raspberry Pi Object Detection with Raspberry Pi 4 User's Guide
 With support for optional Edge TPU.  
   
-Make sure that you've followed the set up guide here: [Set up on your own Raspberry Pi 4](./docs/set_up_instructions-noTPU.md).  
+Make sure that you've followed the set up guide here: [Set up on your own Raspberry Pi 4](set_up_instructions.md).  
 
 Now that you've all set up. You can being to use the detector. 
 
