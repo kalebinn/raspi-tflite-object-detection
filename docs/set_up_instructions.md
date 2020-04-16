@@ -77,7 +77,7 @@ python3 setup.py --setup_TPU=True
 it installed the Edge TPu runtime `libedgetpu1-std` where the std stands for standard clock speed. 
 
 ### [Option C. With TPU operating at 2-times default frequency](#step_4c)
-Google Coral.ai's Edge TPU can run at the maximum operating frequency. THe maximum clock frequency is 2 times the default. *Please note that that when you do this, the Edge TPU will increase in power consumption. This also leads to the Edge TPU possily coming very hot.*
+Google Coral.ai's Edge TPU can run at the maximum operating frequency. The maximum clock frequency is 2 times the default. *Please note that that when you do this, the Edge TPU will increase in power consumption. This also leads to the Edge TPU possibly becoming very hot.*
 
 To set up the TPU with a higher clock frequency, you can use the following option for setting up:
 ```bash
