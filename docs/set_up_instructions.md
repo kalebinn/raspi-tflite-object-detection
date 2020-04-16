@@ -2,13 +2,13 @@
 This project can be used as an extention for other projects such as smart street light cameras, dash cams for cars, UAV surveilance, etc. As such it was designed to be as expandable as possible. Here we will provide a step-by-step guide on how to set up this project on your Raspberry Pi 4. 
 
 ## Table of Contents
-* [Step 1. Update your Raspberry Pi](step_1)
-* [Step 2. Install Virualenv](step_2)
-* [Step 3. Get this repository and start a virtual environment](step_3)
-* [Step 4. Setting up the dependencies](step_4)
-    * [Option A. Without TPU](step_4a)
-    * [Option B. With TPU](step_4b)
-    * [Option C. With TPU operating at 2-times default frequency](step_4c)
+* [Step 1. Update your Raspberry Pi](#step_1)
+* [Step 2. Install Virualenv](#step_2)
+* [Step 3. Get this repository and start a virtual environment](#step_3)
+* [Step 4. Setting up the dependencies](#step_4)
+    * [Option A. Without TPU](#step_4a)
+    * [Option B. With TPU](#step_4b)
+    * [Option C. With TPU operating at 2-times default frequency](#step_4c)
 
 After you're done setting up, a short User's Guide was written for quick later reference. Once you're finished with this document, you can go ahead and read the [User's Guide](Users_Guide.md).
 
