@@ -19,7 +19,7 @@ source /obj-detector-env/bin/activate
 ```
 I've named my virtual environment `obj-detector-env` but feel free to choose your own name. Just make sure to replace it in the command above. 
 
-## [Step 2. Running the object detector](#running)
+## [Step 2. Running the object detector](running)
 At the time of writing this, the object detector only uses a quantized SSD MobileNetv1 trained on the COCO data set. I'm currently working on adding SSD MobileNetv2 and YOLOv3, both trained on the COCO data set. In the future, I'll write a short guide on how you can train your own custom tensorflow models and convert them to to a tflite model.   
   
 Options for `python3 obj-detection.py`:    
