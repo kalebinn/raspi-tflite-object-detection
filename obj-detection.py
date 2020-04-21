@@ -183,7 +183,7 @@ if video is None:
 
         # Draw framerate in corner of frame
         FPS = f"FPS: {round(frame_rate_calc, 2)}"
-        cv2.putText(frame, FPS, (30, 50), FONT, 1, LT_BLUE, 2, cv2.LINE_AA)
+        cv2.putText(frame, FPS, (30, 50), FONT, 2, LT_BLUE, 2, cv2.LINE_AA)
 
         # Finally, project the image with imshow 
         cv2.imshow('Real-Time Object detector with TF-LITE', frame)
@@ -271,7 +271,11 @@ else:
 
         # Draw framerate in corner of frame
         FPS = f"FPS: {round(frame_rate_calc, 2)}"
-        cv2.putText(frame, FPS, (30, 50), FONT, 0.75, RED, 1, cv2.LINE_AA)
+        cv2.putText(frame, FPS, (30, 50), FONT, 1, RED, 2, cv2.LINE_AA)
+        if use_TPU:
+            cv2.putText(frame, "USING EDGE TPU", (10, height - 10), FONT, 0.5, RED, 2, cv2.LINE_AA)
+        else:
+            cv2.putText(frame, "WITHOUT EDGE TPU", (10, height - 10), FONT, 0.5, RED, 2, cv2.LINE_AA)
 
         # All the results have been drawn on the frame, so it's time to display it.
         cv2.imshow('Kelvin Ma - Object Detector', frame)
