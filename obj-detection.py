@@ -187,7 +187,7 @@ if video is None:
 
         # Finally, project the image with imshow 
         cv2.imshow('Real-Time Object detector with TF-LITE', frame)
-
+        
         # Calculate framerate
         t2 = cv2.getTickCount()
         time1 = (t2-t1)/freq
@@ -212,9 +212,9 @@ else:
         t1 = cv2.getTickCount()
         # Acquire frame and resize to expected shape [1xHxWx3]
         next_frame_exists, frame = video.read()
-        if next_frame_exists == False:
+        if not next_frame_exists:
             print("Reached the end of the video, Quitting raspberry pi object detector")
-            quit = True 
+            break
         frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         frame_resized = cv2.resize(frame_rgb, (width, height))
         input_data = np.expand_dims(frame_resized, axis=0)
