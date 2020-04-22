@@ -1,4 +1,4 @@
-# How to set up the project without an Edge TPU
+# How to set up the project on your own Raspberry Pi
 This project can be used as an extention for other projects such as smart street light cameras, dash cams for cars, UAV surveilance, etc. As such it was designed to be as expandable as possible. Here we will provide a step-by-step guide on how to set up this project on your Raspberry Pi 4. 
 
 ## Table of Contents

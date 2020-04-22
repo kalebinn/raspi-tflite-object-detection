@@ -16,7 +16,7 @@ This project can be used as an extention for other projects such as smart street
 This project will be open source and open to modification. In fact, it was made possible by many examples and open source code. We have provided credit in the code depending on the resources. Our own original code will also be open source to all, we only ask that you provide credit. If there are any questions/mistakes, feel free to submit a pull request for e-mail me directly at kalebinn@gmail.com.  
 
 ## Useful Docs
-[Set up on your own Raspberry Pi 4 - without the TPU](./docs/set_up_instructions.md)  
+[Set up on your own Raspberry Pi 4](./docs/set_up_instructions.md)  
 [User's Guide](./docs/Users_Guide.md)
 
 ## Requirements
