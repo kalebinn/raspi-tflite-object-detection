@@ -1,7 +1,9 @@
 # Object Detection using a Raspberry Pi 4 and TensorFlow Lite
 With optional Google Coral.ai USB AI Accelerator (Edge TPU co-processor)  
-  
+
+<div align="center">
 <img src= "./docs/imgs/dashcam-noTPU.gif" width=400><img src= "./docs/imgs/dashcam-usingTPU.gif" width=400>
+</div>
 
 ## Description  
 This is a project for EE 45900 - Microprocessors - Spring 2020 at The City College of New York. In this project we will use a Raspberry Pi to create a Real-Time Object Detector.  
